@@ -14,7 +14,7 @@ GaussianWorld reformulates 3D occupancy prediction as a 4D occupancy forecasting
 ## Overview
 To exploit the scene evolution for perception, we reformulate the 3D occupancy prediction as a 4D occupancy forecasting problem conditioned on the current visual input.
 We propose a Gaussian World Model (GaussianWorld) to explicitly exploit the scene evolution in the 3D Gaussian space and predict 3D occupancy in a streaming manner.
-Our GaussianWorld demonstrates state-of-the-art performance compared to existing methods without introducing additional computation overhead.
+Our GaussianWorld demonstrates state-of-the-art performance compared to existing methods without introducing additional computation overhead.
 
 ![overview](./assets/framework.png)
 
