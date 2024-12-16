@@ -136,7 +136,7 @@ out/
 debug.py
 work_dir/
 pretrain/
-*.sh
+debug.sh
 *.pth
 core.*
 .vscode/

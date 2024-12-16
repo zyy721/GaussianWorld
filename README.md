@@ -1,4 +1,5 @@
 # GaussianWorld: Gaussian World Model for Streaming 3D Occupancy Prediction
+### [Paper](https://arxiv.org/abs/2412.04380)
 
 > GaussianWorld: Gaussian World Model for Streaming 3D Occupancy Prediction
 
@@ -17,4 +18,102 @@ Our GaussianWorld demonstrates state-of-the-art performance compared to existin
 
 ![overview](./assets/framework.png)
 
-Code will be released soon.
+## Getting Started
+
+### Installation
+Follow instructions [HERE](docs/installation.md) to prepare the environment.
+
+### Data Preparation
+1. Download nuScenes V1.0 full dataset data [HERE](https://www.nuscenes.org/download).
+
+2. Download the occupancy annotations from SurroundOcc [HERE](https://github.com/weiyithu/SurroundOcc) and unzip it.
+
+3. Download pkl files [HERE](https://cloud.tsinghua.edu.cn/d/095a624d621b4aa98cf9/).
+
+4. Download the pretrained weights for the image backbone [HERE](https://github.com/zhiqi-li/storage/releases/download/v1.0/r101_dcn_fcos3d_pretrain.pth) and put it inside pretrain
+
+**Folder structure**
+```
+GaussianWorld
+├── ...
+├── data/
+│   ├── nuscenes/
+│   │   ├── maps/
+│   │   ├── samples/
+│   │   ├── sweeps/
+│   │   ├── v1.0-test/
+|   |   ├── v1.0-trainval/
+│   ├── surroundocc/
+│   │   ├── samples/
+│   │   |   ├── xxxxxxxx.pcd.bin.npy
+│   │   |   ├── ...
+│   ├── nuscenes_temporal_infos_train.pkl
+│   ├── nuscenes_temporal_infos_val.pkl
+├── pretrain/
+│   ├── r101_dcn_fcos3d_pretrain.pth
+```
+
+### Inference
+We provide the following checkpoints trained on the SurroundOcc dataset:
+
+| Name  | Type | #Gaussians | mIoU | Config | Weight |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| GaussianFormer | Single-Frame | 25600 | 19.73 | [config](config/nusc_surroundocc_base_eval.py) | [weight](https://cloud.tsinghua.edu.cn/f/a749f8c59e554a46a596/) |
+| GaussianWorld | Streaming | 25600  | 22.13 | [config](config/nusc_surroundocc_stream_eval.py) | [weight](https://cloud.tsinghua.edu.cn/f/4939dcc50b2a44c1b98d/) |
+
+Evaluate the single-frame model GaussianFormer on the SurroundOcc validation set:
+```bash
+bash scripts/eval_base.sh config/nusc_surroundocc_base_eval.py out/ckpt_base.pth out/xxxx
+```
+
+Evaluate the streaming model GaussianWorld on the SurroundOcc validation set:
+```bash
+bash scripts/eval_stream.sh config/nusc_surroundocc_stream_eval.py out/ckpt_stream.pth out/xxxx
+```
+
+### Train
+
+Train the single-frame model GaussianFormer on the SurroundOcc validation set:
+```bash
+bash scripts/train_base.sh config/nusc_surroundocc_base.py out/xxxx
+```
+
+Train the streaming model GaussianWorld on the SurroundOcc validation set:
+```bash
+bash scripts/train_stream.sh config/nusc_surroundocc_stream.py out/xxxx
+```
+
+### Visualize
+Install packages for visualization according to the [documentation](docs/installation.md).
+
+Visualize the single-frame model GaussianFormer on the SurroundOcc validation set:
+```bash
+bash scripts/vis_base.sh config/nusc_surroundocc_base_visualize.py out/ckpt_base.pth scene-0098 out/xxxx
+```
+
+Visualize the streaming model GaussianWorld on the SurroundOcc validation set:
+```bash
+bash scripts/vis_stream.sh config/nusc_surroundocc_stream_visualize.py out/ckpt_stream.pth scene-0098 out/xxxx
+```
+
+## Related Projects
+
+Our work is inspired by these excellent open-sourced repos:
+[TPVFormer](https://github.com/wzzheng/TPVFormer)
+[PointOcc](https://github.com/wzzheng/PointOcc)
+[SelfOcc](https://github.com/huang-yh/SelfOcc)
+[GaussianFormer](https://github.com/huang-yh/GaussianFormer)
+[SurroundOcc](https://github.com/weiyithu/SurroundOcc) 
+[OccFormer](https://github.com/zhangyp15/OccFormer)
+[BEVFormer](https://github.com/fundamentalvision/BEVFormer)
+
+## Citation
+
+If you find this project helpful, please consider citing the following paper:
+```
+@article{zuo2024gaussianworld,
+    title={GaussianWorld: Gaussian World Model for Streaming 3D Occupancy Prediction},
+    author={Zuo, Sicheng and Zheng, Wenzhao and Huang, Yuanhui and Zhou, Jie and Lu, Jiwen},
+    journal={arXiv preprint arXiv:2412.10373},
+    year={2024}
+}

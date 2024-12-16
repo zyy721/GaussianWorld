@@ -36,7 +36,7 @@ num_learnable_pts = 6
 learnable_scale = 5
 scale_multiplier = 5
 num_encoder = 4
-num_refine_temporal = 1
+num_refine_temporal = 3
 return_layer_idx = [3]
 
 _dim_ = 128
