@@ -1,11 +1,11 @@
 # GaussianWorld: Gaussian World Model for Streaming 3D Occupancy Prediction
-### [Paper](https://arxiv.org/abs/2412.04380)
+### [Paper](https://arxiv.org/abs/2412.10373)
 
 > GaussianWorld: Gaussian World Model for Streaming 3D Occupancy Prediction
 
-> [Sicheng Zuo](https://scholar.google.com/citations?user=11kh6C4AAAAJ&hl=en&oi=ao), [Wenzhao Zheng](https://wzzheng.net/)$\dagger$,  [Yuanhui Huang](https://scholar.google.com/citations?hl=zh-CN&user=LKVgsk4AAAAJ), [Jie Zhou](https://scholar.google.com/citations?user=6a79aPwAAAAJ&hl=en&authuser=1), [Jiwen Lu](http://ivg.au.tsinghua.edu.cn/Jiwen_Lu/)
+> [Sicheng Zuo<sup>\*</sup>](https://scholar.google.com/citations?user=11kh6C4AAAAJ&hl=en&oi=ao), [Wenzhao Zheng<sup>\*</sup>](https://wzzheng.net/)$\dagger$,  [Yuanhui Huang](https://scholar.google.com/citations?hl=zh-CN&user=LKVgsk4AAAAJ), [Jie Zhou](https://scholar.google.com/citations?user=6a79aPwAAAAJ&hl=en&authuser=1), [Jiwen Lu](http://ivg.au.tsinghua.edu.cn/Jiwen_Lu/)
 
-$\dagger$ Project leader
+<sup>\*</sup> Equal contribution. $\dagger$ Project leader
 
 GaussianWorld reformulates 3D occupancy prediction as a 4D occupancy forecasting problem conditioned on the current sensor input and propose a **Gaussian World Model** to exploit the scene evolution for perception.
 
@@ -58,7 +58,7 @@ We provide the following checkpoints trained on the SurroundOcc dataset:
 
 | Name  | Type | #Gaussians | mIoU | Config | Weight |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| GaussianFormer | Single-Frame | 25600 | 19.73 | [config](config/nusc_surroundocc_base_eval.py) | [weight](https://cloud.tsinghua.edu.cn/f/a749f8c59e554a46a596/) |
+| GaussianFormer | Single-Frame | 25600 | 19.85 | [config](config/nusc_surroundocc_base_eval.py) | [weight](https://cloud.tsinghua.edu.cn/f/a749f8c59e554a46a596/) |
 | GaussianWorld | Streaming | 25600  | 22.13 | [config](config/nusc_surroundocc_stream_eval.py) | [weight](https://cloud.tsinghua.edu.cn/f/4939dcc50b2a44c1b98d/) |
 
 Evaluate the single-frame model GaussianFormer on the SurroundOcc validation set:
