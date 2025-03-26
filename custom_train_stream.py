@@ -50,6 +50,9 @@ def main(args):
     frame_schedule = cfg.frame_schedule
     p_frame_schedule = cfg.p_frame_schedule
     eval_freq = cfg.eval_freq
+
+    save_freq = cfg.save_freq
+
     print_freq = cfg.print_freq
 
     # init DDP
@@ -360,7 +363,8 @@ def main(args):
                 gc.collect()
             
             # save checkpoint
-            if epoch % eval_freq == 0 and is_main_process():
+            # if epoch % eval_freq == 0 and is_main_process():
+            if epoch % save_freq == 0 and is_main_process():
                 dict_to_save = {
                     'state_dict': my_model.state_dict(),
                     'optimizer': optimizer.state_dict(),

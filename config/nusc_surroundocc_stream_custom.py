@@ -17,7 +17,10 @@ print_freq = 50
 scheduler = 'cosine'
 warmup_iters = 1000
 warmup_lr_init = 1e-6
-eval_freq = 1
+eval_freq = 100
+save_freq = 1
+
+
 # max_epochs = 100
 p_frame_schedule = [[0.2, 5], [0.1, 5], [0.05, 5], [0.033, 5], [0., 10]]
 frame_schedule = [[  5, 5], [ 10, 5], [  20, 5], [   30, 5], [38, 10]]
