@@ -38,6 +38,7 @@ class NuScenes_Scene_SurroundOcc_Dataset_StreamTest(data.Dataset):
     def __len__(self):
         'Denotes the total number of scenes'
         return len(self.scene_name_table)
+        # return 1
 
     def __getitem__(self, index):
         scene_name = self.scene_name_table[index]
