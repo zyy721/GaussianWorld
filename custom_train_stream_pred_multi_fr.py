@@ -269,41 +269,41 @@ def main(args):
 
                 my_model.train()
 
+                i = cfg.num_frames_past
+                # for i in range(cfg.num_frames_past, F):
+                with torch.cuda.amp.autocast(enabled=amp):
+                    # result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                    result_dict = my_model(imgs=None, metas=metas[0][i:], label=label[:, i:], history_anchor=history_anchor, bool_pred_multi_fr=True)
+                # history_anchor = result_dict['history_anchor']
+                # if random.random() < p_frames:
+                #     history_anchor = None
+                #     num_init += 1
+                loss, loss_dict = loss_func(result_dict)
+                loss_record.update(loss=loss.item(), loss_dict=loss_dict)
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+                grad_norm = torch.nn.utils.clip_grad_norm_(my_model.parameters(), cfg.grad_max_norm)
+                scaler.step(optimizer)
+                scaler.update()
+                scheduler.step_update(global_iter)
+                optimizer.zero_grad()
+                time_e = time.time()
 
-                for i in range(cfg.num_frames_past, F):
-                    with torch.cuda.amp.autocast(enabled=amp):
-                        # result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                        result_dict = my_model(imgs=None, metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                    history_anchor = result_dict['history_anchor']
-                    # if random.random() < p_frames:
-                    #     history_anchor = None
-                    #     num_init += 1
-                    loss, loss_dict = loss_func(result_dict)
-                    loss_record.update(loss=loss.item(), loss_dict=loss_dict)
-                    scaler.scale(loss).backward()
-                    scaler.unscale_(optimizer)
-                    grad_norm = torch.nn.utils.clip_grad_norm_(my_model.parameters(), cfg.grad_max_norm)
-                    scaler.step(optimizer)
-                    scaler.update()
-                    scheduler.step_update(global_iter)
-                    optimizer.zero_grad()
-                    time_e = time.time()
-
-                    if is_main_process():
-                        for k, v in loss_dict.items():
-                            writer.add_scalar(f'loss/train_{k}', v, global_iter+1)
-                        writer.add_scalar(f'epoch', epoch+1, global_iter+1)
-                    if i_iter % print_freq == 0 and is_main_process():
-                        lr = optimizer.param_groups[0]['lr']
-                        loss_info = loss_record.loss_info()
-                        # logger.info('[TRAIN] Epoch %d Iter %5d/%d   Init %5d   ' % (epoch+1, i_iter, len(train_dataset_loader)*38, num_init) + loss_info +
-                        #             'GradNorm: %.3f,   lr: %.7f,   time: %.3f' % (grad_norm, lr, time_e - time_s))
-                        logger.info('[TRAIN] Epoch %d Iter %5d/%d   Init %5d   ' % (epoch+1, i_iter, len(train_dataset_loader), num_init) + loss_info +
-                                    'GradNorm: %.3f,   lr: %.7f,   time: %.3f' % (grad_norm, lr, time_e - time_s))
-                        loss_record.reset()
-                    i_iter += 1
-                    global_iter += 1
-                    time_s = time.time()
+                if is_main_process():
+                    for k, v in loss_dict.items():
+                        writer.add_scalar(f'loss/train_{k}', v, global_iter+1)
+                    writer.add_scalar(f'epoch', epoch+1, global_iter+1)
+                if i_iter % print_freq == 0 and is_main_process():
+                    lr = optimizer.param_groups[0]['lr']
+                    loss_info = loss_record.loss_info()
+                    # logger.info('[TRAIN] Epoch %d Iter %5d/%d   Init %5d   ' % (epoch+1, i_iter, len(train_dataset_loader)*38, num_init) + loss_info +
+                    #             'GradNorm: %.3f,   lr: %.7f,   time: %.3f' % (grad_norm, lr, time_e - time_s))
+                    logger.info('[TRAIN] Epoch %d Iter %5d/%d   Init %5d   ' % (epoch+1, i_iter, len(train_dataset_loader), num_init) + loss_info +
+                                'GradNorm: %.3f,   lr: %.7f,   time: %.3f' % (grad_norm, lr, time_e - time_s))
+                    loss_record.reset()
+                i_iter += 1
+                global_iter += 1
+                time_s = time.time()
 
             gc.collect()
 

@@ -1,7 +1,9 @@
 optimizer_wrapper = dict(
     optimizer = dict(
         type='AdamW',
-        lr=4e-4,
+        # lr=4e-4,
+        lr=1e-5,
+
         weight_decay=0.01,
     ),
     paramwise_cfg=dict(
@@ -18,6 +20,7 @@ scheduler = 'cosine'
 warmup_iters = 1000
 warmup_lr_init = 1e-6
 eval_freq = 100
+# eval_freq = 1
 save_freq = 1
 
 
@@ -27,7 +30,9 @@ frame_schedule = [[  5, 5], [ 10, 5], [  20, 5], [   30, 5], [38, 10]]
 # load_from = 'out/ckpt_base.pth'
 load_from = 'out/ckpt_stream.pth'
 
-find_unused_parameters = False
+# find_unused_parameters = False
+find_unused_parameters = True
+
 track_running_stats = True
 ignore_label = 0
 empty_idx = 17   # 0 noise, 1~16 objects, 17 empty

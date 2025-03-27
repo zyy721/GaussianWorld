@@ -251,34 +251,63 @@ def main(args):
                 history_anchor = None
 
 
-                my_model.eval()
+                # my_model.eval()
 
-                with torch.no_grad():
-                    for i in range(cfg.num_frames_past - 1):
-                        with torch.cuda.amp.autocast(enabled=amp):
-                            result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                        history_anchor = result_dict['history_anchor']
+                # with torch.no_grad():
+                #     for i in range(cfg.num_frames_past - 1):
+                #         with torch.cuda.amp.autocast(enabled=amp):
+                #             result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                #         history_anchor = result_dict['history_anchor']
+
+                # # my_model.train()
+
+                # # with torch.no_grad():
+                #     i = i + 1
+                #     with torch.cuda.amp.autocast(enabled=amp):
+                #         result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                #     history_anchor = result_dict['history_anchor']
 
                 # my_model.train()
 
-                # with torch.no_grad():
-                    i = i + 1
+
+
+                loss = 0.0
+                loss_dict = {
+                   'CELoss': 0.0,
+                   'LovaszLoss': 0.0, 
+                }
+                # for i in range(cfg.num_frames_past, F):
+                for i in range(F):
                     with torch.cuda.amp.autocast(enabled=amp):
-                        result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                    history_anchor = result_dict['history_anchor']
+                        if i < cfg.num_frames_past:
+                            result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                            history_anchor = result_dict['history_anchor']
+                            # if random.random() < p_frames:
+                            #     history_anchor = None
+                            #     num_init += 1
+                            cur_loss, cur_loss_dict = loss_func(result_dict)
 
-                my_model.train()
+                            loss = loss + cur_loss
+                            loss_dict['CELoss'] = loss_dict['CELoss'] + cur_loss_dict['CELoss']
+                            loss_dict['LovaszLoss'] = loss_dict['LovaszLoss'] + cur_loss_dict['LovaszLoss']
+                            continue
 
+                        else:
+                            result_dict = my_model(imgs=None, metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                            history_anchor = result_dict['history_anchor']
+                            # if random.random() < p_frames:
+                            #     history_anchor = None
+                            #     num_init += 1
+                            cur_loss, cur_loss_dict = loss_func(result_dict)
 
-                for i in range(cfg.num_frames_past, F):
-                    with torch.cuda.amp.autocast(enabled=amp):
-                        # result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                        result_dict = my_model(imgs=None, metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                    history_anchor = result_dict['history_anchor']
-                    # if random.random() < p_frames:
-                    #     history_anchor = None
-                    #     num_init += 1
-                    loss, loss_dict = loss_func(result_dict)
+                            loss = loss + cur_loss
+                            loss_dict['CELoss'] = loss_dict['CELoss'] + cur_loss_dict['CELoss']
+                            loss_dict['LovaszLoss'] = loss_dict['LovaszLoss'] + cur_loss_dict['LovaszLoss']
+
+                    loss = loss / F
+                    loss_dict['CELoss'] = loss_dict['CELoss'] / F
+                    loss_dict['LovaszLoss'] = loss_dict['LovaszLoss'] / F
+
                     loss_record.update(loss=loss.item(), loss_dict=loss_dict)
                     scaler.scale(loss).backward()
                     scaler.unscale_(optimizer)

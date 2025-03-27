@@ -34,7 +34,9 @@ image_size = [864, 1600]
 resize_lim = [1.0, 1.0]
 flip = True
 # num_frames = 30
-num_frames = 3
+# num_frames = 3
+num_frames = 6
+
 num_frames_val = 12
 
 num_frames_past = 2
@@ -146,7 +148,8 @@ future_decoder=dict(
 
 model = dict(
     # type='GaussianSegmentorStream',
-    type='GaussianSegmentorStreamCustom',
+    # type='GaussianSegmentorStreamCustom',
+    type='GaussianSegmentorStreamCustomPredMultiFr',
     backbone=dict(
         type='ResNet',
         depth=101,

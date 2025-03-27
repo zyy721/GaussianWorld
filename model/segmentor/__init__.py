@@ -1,3 +1,4 @@
 from .gaussian_segmentor import GaussianSegmentor
 from .gaussian_segmentor_stream import GaussianSegmentorStream
 from .gaussian_segmentor_stream_custom import GaussianSegmentorStreamCustom
+from .gaussian_segmentor_stream_custom_pred_multi_fr import GaussianSegmentorStreamCustomPredMultiFr

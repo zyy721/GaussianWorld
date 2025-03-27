@@ -1,7 +1,9 @@
 optimizer_wrapper = dict(
     optimizer = dict(
         type='AdamW',
-        lr=4e-4,
+        # lr=4e-4,
+        lr=1e-5,
+
         weight_decay=0.01,
     ),
     paramwise_cfg=dict(
@@ -17,12 +19,20 @@ print_freq = 50
 scheduler = 'cosine'
 warmup_iters = 1000
 warmup_lr_init = 1e-6
-eval_freq = 1
+eval_freq = 100
+# eval_freq = 1
+save_freq = 1
+
+
 # max_epochs = 100
 p_frame_schedule = [[0.2, 5], [0.1, 5], [0.05, 5], [0.033, 5], [0., 10]]
 frame_schedule = [[  5, 5], [ 10, 5], [  20, 5], [   30, 5], [38, 10]]
-load_from = None
-find_unused_parameters = False
+# load_from = 'out/ckpt_base.pth'
+load_from = 'out/ckpt_stream.pth'
+
+# find_unused_parameters = False
+find_unused_parameters = True
+
 track_running_stats = True
 ignore_label = 0
 empty_idx = 17   # 0 noise, 1~16 objects, 17 empty
@@ -34,8 +44,9 @@ image_size = [864, 1600]
 resize_lim = [1.0, 1.0]
 flip = True
 # num_frames = 30
-num_frames = 3
-num_frames_val = 12
+# num_frames = 3
+num_frames = 6
+times = 5
 
 num_frames_past = 2
 
@@ -47,7 +58,7 @@ learnable_scale = 5
 scale_multiplier = 5
 num_encoder = 4
 num_refine_temporal = 3
-return_layer_idx = [3]
+return_layer_idx = [2, 3]
 
 _dim_ = 128
 num_cams = 6
@@ -146,7 +157,8 @@ future_decoder=dict(
 
 model = dict(
     # type='GaussianSegmentorStream',
-    type='GaussianSegmentorStreamCustom',
+    # type='GaussianSegmentorStreamCustom',
+    type='GaussianSegmentorStreamCustomPredMultiFr',
     backbone=dict(
         type='ResNet',
         depth=101,
@@ -268,21 +280,23 @@ loss = dict(
 data_path = 'data/nuscenes/'
 
 train_dataset_config = dict(
-    type='NuScenes_Scene_SurroundOcc_Dataset_StreamTest',
+    # type='NuScenes_Scene_SurroundOcc_Dataset_Stream',
+    type='NuScenes_Scene_SurroundOcc_Dataset_Stream_Custom',
     data_path = data_path,
     num_frames = num_frames,
     imageset = 'data/nuscenes_temporal_infos_train.pkl',
     phase='train',
+    times=times,
 )
 
 val_dataset_config = dict(
-    # type='NuScenes_Scene_SurroundOcc_Dataset_StreamTest',
+    # type='NuScenes_Scene_SurroundOcc_Dataset_Stream',
     type='NuScenes_Scene_SurroundOcc_Dataset_Stream_Traverse_Custom',
     data_path = data_path,
-    # num_frames = num_frames,
-    num_frames = num_frames_val,
+    num_frames = num_frames,
     imageset = 'data/nuscenes_temporal_infos_val.pkl',
     phase='val',
+    times=times,
 )
 
 train_wrapper_config = dict(
@@ -304,11 +318,11 @@ val_wrapper_config = dict(
 train_loader_config = dict(
     batch_size = 1,
     shuffle = True,
-    num_workers = 2,
+    num_workers = 1,
 )
     
 val_loader_config = dict(
     batch_size = 1,
     shuffle = False,
-    num_workers = 2,
+    num_workers = 1,
 )

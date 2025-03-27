@@ -111,7 +111,11 @@ def main(args):
     amp = cfg.get('amp', True)
     from loss import GPD_LOSS
     loss_func = GPD_LOSS.build(cfg.loss).cuda()
-    batch_iou = len(cfg.model.encoder.return_layer_idx)
+    # batch_iou = len(cfg.model.encoder.return_layer_idx)
+
+    num_frames_pred = cfg.num_frames - cfg.num_frames_past
+    batch_iou = num_frames_pred
+
     CalMeanIou_sem = IOUEvalBatch(n_classes=18, bs=batch_iou, device=torch.device('cpu'), ignore=[0], is_distributed=distributed)
     CalMeanIou_geo = IOUEvalBatch(n_classes=2, bs=batch_iou, device=torch.device('cpu'), ignore=[], is_distributed=distributed)
     
@@ -151,36 +155,35 @@ def main(args):
             F = imgs.shape[1]
             history_anchor = None
 
-
             # for i in range(F):
-            for i_frame in range(3):
+            for i_frame in range(cfg.num_frames_past):
                 i = i_frame + 3
 
                 with torch.cuda.amp.autocast(enabled=amp):
-                    if i_frame < cfg.num_frames_past:
-                        result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                        history_anchor = result_dict['history_anchor']
-                        continue
-                    else:
-                        result_dict = my_model(imgs=None, metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
-                        history_anchor = result_dict['history_anchor']
+                    result_dict = my_model(imgs=imgs[:, i], metas=metas[0][i], label=label[:, i:i+1], history_anchor=history_anchor)
+                history_anchor = result_dict['history_anchor']
 
-                loss, loss_dict = loss_func(result_dict)
-            
-                loss_record.update(loss=loss.item(), loss_dict=loss_dict)
-                voxel_predict = result_dict['ce_input'].argmax(dim=1).long()
-                voxel_label = result_dict['ce_label'].long()
-                iou_predict = ((voxel_predict > 0) & (voxel_predict < 17)).long()
-                iou_label = ((voxel_label > 0) & (voxel_label < 17)).long()
-                CalMeanIou_sem.addBatch(voxel_predict, voxel_label)
-                CalMeanIou_geo.addBatch(iou_predict, iou_label)
-            
-                if i_iter_val % print_freq == 0 and is_main_process():
-                    loss_info = loss_record.loss_info()
-                    # logger.info('[EVAL] Iter %5d/%d    Memory  %4d M  '%(i_iter_val, len(val_dataset_loader)*F, int(torch.cuda.max_memory_allocated()/1e6)) + loss_info)
-                    logger.info('[EVAL] Iter %5d/%d    Memory  %4d M  '%(i_iter_val, len(val_dataset_loader), int(torch.cuda.max_memory_allocated()/1e6)) + loss_info)
-                    # loss_record.reset()
-                i_iter_val += 1
+            i = i + 1
+            with torch.cuda.amp.autocast(enabled=amp):
+                result_dict = my_model(imgs=None, metas=metas[0][i:i+num_frames_pred], label=label[:, i:i+num_frames_pred], history_anchor=history_anchor, bool_pred_multi_fr=True)
+            # history_anchor = result_dict['history_anchor']
+
+            loss, loss_dict = loss_func(result_dict)
+        
+            loss_record.update(loss=loss.item(), loss_dict=loss_dict)
+            voxel_predict = result_dict['ce_input'].argmax(dim=1).long()
+            voxel_label = result_dict['ce_label'].long()
+            iou_predict = ((voxel_predict > 0) & (voxel_predict < 17)).long()
+            iou_label = ((voxel_label > 0) & (voxel_label < 17)).long()
+            CalMeanIou_sem.addBatch(voxel_predict, voxel_label)
+            CalMeanIou_geo.addBatch(iou_predict, iou_label)
+        
+            if i_iter_val % print_freq == 0 and is_main_process():
+                loss_info = loss_record.loss_info()
+                # logger.info('[EVAL] Iter %5d/%d    Memory  %4d M  '%(i_iter_val, len(val_dataset_loader)*F, int(torch.cuda.max_memory_allocated()/1e6)) + loss_info)
+                logger.info('[EVAL] Iter %5d/%d    Memory  %4d M  '%(i_iter_val, len(val_dataset_loader), int(torch.cuda.max_memory_allocated()/1e6)) + loss_info)
+                # loss_record.reset()
+            i_iter_val += 1
 
     val_iou_sem = CalMeanIou_sem.getIoU()
     val_iou_geo = CalMeanIou_geo.getIoU()

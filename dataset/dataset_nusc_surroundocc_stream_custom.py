@@ -44,6 +44,8 @@ class NuScenes_Scene_SurroundOcc_Dataset_Stream_Custom(data.Dataset):
         return len(self.scene_names) * self.times
 
     def __getitem__(self, index):
+        index = index % len(self.scene_names)
+
         if self.num_frames is None:
             start_idx, end_idx = 0, self.scene_lens[index]
         else:
